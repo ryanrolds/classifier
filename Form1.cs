@@ -14,21 +14,71 @@ namespace Classifier {
         String imageDir = null;
         String imageFile = null;
         Boolean toldDone = false;
+        int imageCount = 0;
+        int completedCount = 0;
 
         public Form1() {
             InitializeComponent();
 
+            ToolTip toolTip1 = new ToolTip();
+            toolTip1.SetToolTip(this.buttonSL, "Slight left (Q) - Move left to avoid obstruction");
+            toolTip1.SetToolTip(this.buttonF, "Forward (W) - No obstructions for at least a few feet");
+            toolTip1.SetToolTip(this.buttonSR, "Slight right (E) - Move right to avoid obstruction");
+            toolTip1.SetToolTip(this.buttonL, "Full left - Move left to avoid nearby obstruction");
+            toolTip1.SetToolTip(this.buttonB, "Backwards - Completely blocked, move backwards");
+            toolTip1.SetToolTip(this.buttonR, "Full right - Move right to avoid nearby obstruction");
+            toolTip1.SetToolTip(this.buttonDelete, "Bad image - Incomplete, too dark, or unclassifiable");
+
+            // Speed up classification by allowing users to press buttons
+            this.KeyDown += new KeyEventHandler(this.onKeyDown);
+
             loadImages(".\\");
+        }
+
+        private void onKeyDown(object sender, KeyEventArgs e) {
+            Control[] target = null;
+            switch(e.KeyCode) {
+                case Keys.Q:
+                    target = this.Controls.Find("buttonSL", true);
+                    break;
+                case Keys.W:
+                    target = this.Controls.Find("buttonF", true);
+                    break;
+                case Keys.E:
+                    target = this.Controls.Find("buttonSR", true);
+                    break;
+                case Keys.A:
+                    target = this.Controls.Find("buttonL", true);
+                    break;
+                case Keys.S:
+                    target = this.Controls.Find("buttonB", true);
+                    break;
+                case Keys.D:
+                    target = this.Controls.Find("buttonR", true);
+                    break;
+                case Keys.Delete:
+                    target = this.Controls.Find("buttonDelete", true);
+                    break;
+                case Keys.R:
+                    moveListToRandom();
+                    return;
+                case Keys.N:
+                    moveListToNext();
+                    return;                    
+            }
+
+            if (target != null && target.Length == 1) {
+                ((Button)target[0]).PerformClick();
+            }            
         }
 
         private void loadImages(String dir) {
             imageDir = dir;
+            completedCount = 0;
 
             IEnumerable<string> files = Directory.EnumerateFiles(dir, "*.ppm");
 
-            // Show some detials in status bar
-            statusStrip1.Invalidate();
-            statusStrip1.Refresh();
+            imageCount = files.Count();
 
             ImageList images = new ImageList();
             images.ImageSize = new Size(64, 64);
@@ -46,9 +96,14 @@ namespace Classifier {
 
                 viewItem.Tag = getClassTag(pix);
 
+                if (viewItem.Tag != null) {
+                    completedCount++;
+                }
+
                 viewItem.ImageKey = filename;
             }
 
+            updateCompletionStatus();
             moveListToNext();
         }
 
@@ -105,6 +160,11 @@ namespace Classifier {
 
             // Write action to image comments
             int index = listView1.SelectedIndices[0];
+
+            if (listView1.Items[index].Tag == null) {
+                completedCount++;
+            }
+
             listView1.Items[index].Tag = classification; // Tag list view item for searching
 
             String fromFile = imageDir + "\\" + listView1.Items[index].ImageKey;
@@ -122,6 +182,8 @@ namespace Classifier {
             String toFile = imageDir + "\\" + listView1.Items[index].ImageKey;
             pix.Save(toFile);
 
+            
+            updateCompletionStatus();
             moveListToNext();
         }
 
@@ -148,6 +210,32 @@ namespace Classifier {
 
             listView1.Items[i].Selected = true;
             listView1.EnsureVisible(i);
+        }
+
+        private void moveListToRandom() {
+            if (listView1.Items.Count == 0) {
+                return;
+            }
+
+            Random rando = new Random();
+            int i = rando.Next(listView1.Items.Count);
+
+            listView1.Items[i].Selected = true;
+            listView1.EnsureVisible(i);
+        }
+
+        private void updateCompletionStatus() {
+            if (imageCount > 0) {
+                float completionPercentage = (float)completedCount / imageCount * 100;
+                toolStripStatusLabel1.Text = completedCount + " / " + imageCount +
+                    " (" + Math.Round(completionPercentage, 1) + "%)";
+            } else {
+                toolStripStatusLabel1.Text = "No *.ppm images found";
+            }
+
+            // Show some detials in status bar
+            statusStrip1.Invalidate();
+            statusStrip1.Refresh();
         }
     }
 }

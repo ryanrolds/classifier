@@ -31,13 +31,14 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.listView1 = new System.Windows.Forms.ListView();
             this.label1 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
-            this.button6 = new System.Windows.Forms.Button();
-            this.button8 = new System.Windows.Forms.Button();
-            this.button10 = new System.Windows.Forms.Button();
+            this.buttonSL = new System.Windows.Forms.Button();
+            this.buttonF = new System.Windows.Forms.Button();
+            this.buttonSR = new System.Windows.Forms.Button();
+            this.buttonR = new System.Windows.Forms.Button();
+            this.buttonL = new System.Windows.Forms.Button();
+            this.buttonB = new System.Windows.Forms.Button();
+            this.buttonDelete = new System.Windows.Forms.Button();
+            this.versionLabel = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -122,94 +123,106 @@
             this.label1.TabIndex = 4;
             this.label1.Text = "label1";
             // 
-            // button1
+            // buttonSL
             // 
-            this.button1.Location = new System.Drawing.Point(12, 58);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(30, 30);
-            this.button1.TabIndex = 5;
-            this.button1.Text = "SL";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.imageButtonClicked);
+            this.buttonSL.Location = new System.Drawing.Point(12, 58);
+            this.buttonSL.Name = "buttonSL";
+            this.buttonSL.Size = new System.Drawing.Size(30, 30);
+            this.buttonSL.TabIndex = 5;
+            this.buttonSL.Text = "SL";
+            this.buttonSL.UseVisualStyleBackColor = true;
+            this.buttonSL.Click += new System.EventHandler(this.imageButtonClicked);
             // 
-            // button2
+            // buttonF
             // 
-            this.button2.Location = new System.Drawing.Point(48, 58);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(30, 30);
-            this.button2.TabIndex = 6;
-            this.button2.Text = "F";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.imageButtonClicked);
+            this.buttonF.Location = new System.Drawing.Point(48, 58);
+            this.buttonF.Name = "buttonF";
+            this.buttonF.Size = new System.Drawing.Size(30, 30);
+            this.buttonF.TabIndex = 6;
+            this.buttonF.Text = "F";
+            this.buttonF.UseVisualStyleBackColor = true;
+            this.buttonF.Click += new System.EventHandler(this.imageButtonClicked);
             // 
-            // button3
+            // buttonSR
             // 
-            this.button3.Location = new System.Drawing.Point(84, 58);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(30, 30);
-            this.button3.TabIndex = 7;
-            this.button3.Text = "SR";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.imageButtonClicked);
+            this.buttonSR.Location = new System.Drawing.Point(84, 58);
+            this.buttonSR.Name = "buttonSR";
+            this.buttonSR.Size = new System.Drawing.Size(30, 30);
+            this.buttonSR.TabIndex = 7;
+            this.buttonSR.Text = "SR";
+            this.buttonSR.UseVisualStyleBackColor = true;
+            this.buttonSR.Click += new System.EventHandler(this.imageButtonClicked);
             // 
-            // button4
+            // buttonR
             // 
-            this.button4.Location = new System.Drawing.Point(84, 94);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(30, 30);
-            this.button4.TabIndex = 10;
-            this.button4.Text = "R";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.imageButtonClicked);
+            this.buttonR.Location = new System.Drawing.Point(84, 94);
+            this.buttonR.Name = "buttonR";
+            this.buttonR.Size = new System.Drawing.Size(30, 30);
+            this.buttonR.TabIndex = 10;
+            this.buttonR.Text = "R";
+            this.buttonR.UseVisualStyleBackColor = true;
+            this.buttonR.Click += new System.EventHandler(this.imageButtonClicked);
             // 
-            // button6
+            // buttonL
             // 
-            this.button6.Location = new System.Drawing.Point(12, 94);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(30, 30);
-            this.button6.TabIndex = 8;
-            this.button6.Text = "L";
-            this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.imageButtonClicked);
+            this.buttonL.Location = new System.Drawing.Point(12, 94);
+            this.buttonL.Name = "buttonL";
+            this.buttonL.Size = new System.Drawing.Size(30, 30);
+            this.buttonL.TabIndex = 8;
+            this.buttonL.Text = "L";
+            this.buttonL.UseVisualStyleBackColor = true;
+            this.buttonL.Click += new System.EventHandler(this.imageButtonClicked);
             // 
-            // button8
+            // buttonB
             // 
-            this.button8.Location = new System.Drawing.Point(48, 130);
-            this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(30, 30);
-            this.button8.TabIndex = 12;
-            this.button8.Text = "B";
-            this.button8.UseVisualStyleBackColor = true;
-            this.button8.Click += new System.EventHandler(this.imageButtonClicked);
+            this.buttonB.Location = new System.Drawing.Point(48, 130);
+            this.buttonB.Name = "buttonB";
+            this.buttonB.Size = new System.Drawing.Size(30, 30);
+            this.buttonB.TabIndex = 12;
+            this.buttonB.Text = "B";
+            this.buttonB.UseVisualStyleBackColor = true;
+            this.buttonB.Click += new System.EventHandler(this.imageButtonClicked);
             // 
-            // button10
+            // buttonDelete
             // 
-            this.button10.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button10.Location = new System.Drawing.Point(497, 35);
-            this.button10.Name = "button10";
-            this.button10.Size = new System.Drawing.Size(75, 23);
-            this.button10.TabIndex = 14;
-            this.button10.Text = "Bad";
-            this.button10.UseVisualStyleBackColor = true;
-            this.button10.Click += new System.EventHandler(this.imageButtonClicked);
+            this.buttonDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonDelete.Location = new System.Drawing.Point(497, 35);
+            this.buttonDelete.Name = "buttonDelete";
+            this.buttonDelete.Size = new System.Drawing.Size(75, 23);
+            this.buttonDelete.TabIndex = 14;
+            this.buttonDelete.Text = "Bad";
+            this.buttonDelete.UseVisualStyleBackColor = true;
+            this.buttonDelete.Click += new System.EventHandler(this.imageButtonClicked);
+            // 
+            // versionLabel
+            // 
+            this.versionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.versionLabel.AutoSize = true;
+            this.versionLabel.Location = new System.Drawing.Point(535, 337);
+            this.versionLabel.Name = "versionLabel";
+            this.versionLabel.Size = new System.Drawing.Size(37, 13);
+            this.versionLabel.TabIndex = 15;
+            this.versionLabel.Text = "v0.0.2";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(584, 511);
-            this.Controls.Add(this.button10);
-            this.Controls.Add(this.button8);
-            this.Controls.Add(this.button4);
-            this.Controls.Add(this.button6);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.versionLabel);
+            this.Controls.Add(this.buttonDelete);
+            this.Controls.Add(this.buttonB);
+            this.Controls.Add(this.buttonR);
+            this.Controls.Add(this.buttonL);
+            this.Controls.Add(this.buttonSR);
+            this.Controls.Add(this.buttonF);
+            this.Controls.Add(this.buttonSL);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.menuStrip1);
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(600, 550);
             this.Name = "Form1";
@@ -234,13 +247,14 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button6;
-        private System.Windows.Forms.Button button8;
-        private System.Windows.Forms.Button button10;
+        private System.Windows.Forms.Button buttonSL;
+        private System.Windows.Forms.Button buttonF;
+        private System.Windows.Forms.Button buttonSR;
+        private System.Windows.Forms.Button buttonR;
+        private System.Windows.Forms.Button buttonL;
+        private System.Windows.Forms.Button buttonB;
+        private System.Windows.Forms.Button buttonDelete;
+        private System.Windows.Forms.Label versionLabel;
     }
 }
 
