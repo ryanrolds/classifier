@@ -11,7 +11,7 @@ using System.IO;
 
 namespace Classifier {
     public partial class Form1 : Form {
-        String imageDir = null;
+        String imageDir = null;        
         String imageFile = null;
         Boolean toldDone = false;
         int imageCount = 0;
@@ -73,13 +73,14 @@ namespace Classifier {
         }
 
         private void loadImages(String dir) {
+            IEnumerable<string> files = Directory.EnumerateFiles(dir, "*.ppm");            
+            imageCount = files.Count();
+            if (imageCount == 0) {
+                return;
+            }
+
             imageDir = dir;
             completedCount = 0;
-
-            IEnumerable<string> files = Directory.EnumerateFiles(dir, "*.ppm");
-
-            imageCount = files.Count();
-
             ImageList images = new ImageList();
             images.ImageSize = new Size(64, 64);
 
@@ -103,27 +104,26 @@ namespace Classifier {
                 viewItem.ImageKey = filename;
             }
 
+            analyzeImagesToolStripMenuItem.Enabled = true;
+            mergeImagesToolStripMenuItem.Enabled = true;
+            compareImagesToolStripMenuItem.Enabled = true;
+
             updateCompletionStatus();
             moveListToNext();
         }
 
         private object getClassTag(PixelMap pix) {
-            PixelMap.PixelMapHeader header = pix.Header;
-
-            String tag = null;
-            foreach(String comment in header.Comments) {
-                if (comment.IndexOf("Class: ") != -1) {
-                    tag = comment.Substring(8);
-                    break;                        
-                }
-            }
-
-            return tag;
+            return pix.Header.GetComment("Class");
         }
 
         private void updateImageDir(object sender, EventArgs e) {
             FolderBrowserDialog diag = new FolderBrowserDialog();
+            diag.RootFolder = Environment.SpecialFolder.MyComputer;
+            diag.SelectedPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+
             DialogResult result = diag.ShowDialog();
+
+           
 
             if (result == DialogResult.OK) {
                 loadImages(diag.SelectedPath);
@@ -170,14 +170,9 @@ namespace Classifier {
             String fromFile = imageDir + "\\" + listView1.Items[index].ImageKey;
             PixelMap pix = new PixelMap(fromFile);
 
-            List<String> comments = new List<string>();
-            comments.Add("Class: " + classification);
-            comments.Add("Hostname: " + System.Environment.MachineName.ToString());
-            comments.Add("Date: " + DateTime.Now.ToUniversalTime().ToString());
-
-            PixelMap.PixelMapHeader header = pix.Header;
-            header.Comments = comments;
-            pix.Header = header;
+            pix.Header.SetComment("Class", classification);
+            pix.Header.SetComment("Hostname", System.Environment.MachineName.ToString());
+            pix.Header.SetComment("Date", DateTime.Now.ToString("yyyyMMdd HH:mm:ss.fff"));
 
             String toFile = imageDir + "\\" + listView1.Items[index].ImageKey;
             pix.Save(toFile);
@@ -236,6 +231,148 @@ namespace Classifier {
             // Show some detials in status bar
             statusStrip1.Invalidate();
             statusStrip1.Refresh();
+        }
+
+        private void oAnalyzeImagesMenuClick(object sender, EventArgs e) {
+            if (imageDir != null) {
+                analyzeImages(imageDir);
+            }
+        }
+
+        private void analyzeImages(String analyzeDir) {
+            // Get list of incoming files
+            IEnumerable<string> files = Directory.EnumerateFiles(analyzeDir, "*.ppm");
+
+            // Setup variables to hold analyais
+            // Average time between classifications
+            int totalImages = files.Count();           
+            String prevImageDate = null; // Nonnullable DateTime is BS
+            List<double> diffs = new List<double>();
+
+            int numBad = 0;
+            int numForward = 0;
+            int numSlightLeft = 0;
+            int numLeft = 0;
+            int numSlightRight = 0;
+            int numRight = 0;
+            int numBackwards = 0;
+
+            // Iterate sorted files (ensures dates are in order)
+           
+            IOrderedEnumerable<string> sortedFiles = files.OrderBy(s => (new PixelMap(s)).Header.GetComment("Date"));
+            foreach (String file in sortedFiles) {
+                // Load existing file's metadata
+                PixelMap pix = new PixelMap(file);
+
+                // Update analytics
+                String classification = pix.Header.GetComment("Class");
+                if (classification != null) {
+                    switch(classification) {
+                        case "SL":
+                            numSlightLeft++;
+                            break;
+                        case "L":
+                            numLeft++;
+                            break;
+                        case "SR":
+                            numSlightRight++;
+                            break;
+                        case "R":
+                            numRight++;                        
+                            break;
+                        case "F":
+                            numForward++;
+                            break;
+                        case "B":
+                            numBackwards++;
+                            break;
+                        case "Bad":
+                            numBad++;
+                            break;
+                    }
+                }
+
+                // Calculate averge time spent classifying the frames                         
+                String dateStr = pix.Header.GetComment("Date");
+                if (dateStr != null) { 
+                    DateTime date = DateTime.Parse(dateStr);
+                    
+                    // Check if we have a previous frame
+                    if (prevImageDate != null) {
+                        DateTime prevDate = DateTime.Parse(prevImageDate);
+                        // Add time since last to sum
+                        TimeSpan diff = date - prevDate;
+                        diffs.Add(diff.TotalMilliseconds);
+                    }
+
+                    // Update previous frame
+                    prevImageDate = dateStr;
+                }
+            }
+
+            diffs.Sort();
+            double medianTime = diffs[diffs.Count() / 2];
+
+            double sumTimeMS = diffs.Sum();
+            double averageTime = diffs.Average();            
+            double minTime = diffs.Max();
+
+            // Output analysis in dialog
+            String analysis = "";
+            analysis += "Time:\n" +
+                "\tMedian: " + medianTime + "\n" +
+                "\tAverage: " + averageTime + "\n" +
+                "\n" +
+                "Total images: " + totalImages + "\n" +
+                "Bad: " + numBad + "\n" +
+                "Total L: " + numLeft + "\n" +
+                "Total SL: " + numSlightLeft + "\n" +
+                "Total F: " + numForward + "\n" +
+                "Total SR: " + numSlightRight + "\n" +
+                "Total R: " + numRight + "\n" +
+                "Total B: " + numBackwards;
+            MessageBox.Show(analysis, "Analysis", MessageBoxButtons.OK);
+        }
+
+        private void onCompareImagesMenuClick(object sender, EventArgs e) {
+            FolderBrowserDialog diag = new FolderBrowserDialog();
+            DialogResult result = diag.ShowDialog();
+
+            if (result == DialogResult.OK) {
+                compareImages(diag.SelectedPath);
+            }
+        }
+
+        private void compareImages(String compareDir) {
+            // Get list of incoming files
+
+            // Setup variables to hold analyais
+
+            // Iterate files
+            // Load existing file's metadata
+            // Load incoming files metadadta
+            // Compare metadata
+
+            // Update analytics
+            
+            // Output analtycs in dialog        
+        }
+
+        private void onMergeImagesMenuClick(object sender, EventArgs e) {
+            FolderBrowserDialog diag = new FolderBrowserDialog();
+            DialogResult result = diag.ShowDialog();
+
+            if (result == DialogResult.OK) {
+                mergeImages(diag.SelectedPath);
+            }
+        }
+
+        private void mergeImages(String incomingDir) {
+
+        }
+
+        private void versionLabel_Click(object sender, EventArgs e) {
+
         }
     }
 }

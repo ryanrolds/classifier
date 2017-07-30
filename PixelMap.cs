@@ -131,6 +131,8 @@ namespace Classifier {
         {
             int index;
             this.header = new PixelMapHeader();
+            this.header.Comments = new Dictionary<string, string>();
+
             int headerItemCount = 0;
             BinaryReader binReader = new BinaryReader(stream);
             try
@@ -151,7 +153,14 @@ namespace Classifier {
                             commentChar = binReader.ReadChar();
                         };
 
-                        comments.Add(comment);
+                        int seperatorPos = comment.IndexOf(":");
+                        if (seperatorPos < 0) {
+                            continue;
+                        }
+
+                        String key = comment.Substring(1, seperatorPos - 1).Trim();
+                        String value = comment.Substring(seperatorPos + 1).Trim();
+                        this.header.SetComment(key, value);
                     }
                     else if (Char.IsWhiteSpace(nextChar))   // whitespace
                     {
@@ -192,8 +201,6 @@ namespace Classifier {
                         }
                     }
                 }
-
-                this.header.Comments = comments;
 
                 // 2. Read the image data.
                 // 2.1 Size the imageData array to hold the image bytes.
@@ -511,9 +518,8 @@ namespace Classifier {
             byte[] bytes;
 
             // Comments
-            foreach (String comment in this.header.Comments) {
-                stream.Write(Encoding.ASCII.GetBytes("#"), 0, 1);
-                bytes = Encoding.ASCII.GetBytes(comment);
+            foreach (KeyValuePair<string, string> comment in this.header.Comments) {
+                bytes = Encoding.ASCII.GetBytes("#" + comment.Key + ":" + comment.Value);
                 stream.Write(bytes, 0, bytes.Length);
                 stream.Write(Encoding.ASCII.GetBytes("\n"), 0, 1);
             }
@@ -585,10 +591,20 @@ namespace Classifier {
                 set { depth = value; }
             }
 
-            private List<String> comments;
-            public List<String> Comments {
+            private Dictionary<String, String> comments;
+            public Dictionary<String, String> Comments {
                 get { return comments; }
                 set { comments = value; }
+            }
+
+            public String GetComment(String key) {
+                String value = null;
+                comments.TryGetValue(key, out value);
+                return value;
+            }
+
+            public void SetComment(String key, String value) {
+                comments[key] = value;
             }
         }
     }

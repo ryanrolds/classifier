@@ -39,6 +39,9 @@
             this.buttonB = new System.Windows.Forms.Button();
             this.buttonDelete = new System.Windows.Forms.Button();
             this.versionLabel = new System.Windows.Forms.Label();
+            this.mergeImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.compareImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.analyzeImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -57,7 +60,10 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.loadImagesToolStripMenuItem});
+            this.loadImagesToolStripMenuItem,
+            this.analyzeImagesToolStripMenuItem,
+            this.compareImagesToolStripMenuItem,
+            this.mergeImagesToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -65,7 +71,7 @@
             // loadImagesToolStripMenuItem
             // 
             this.loadImagesToolStripMenuItem.Name = "loadImagesToolStripMenuItem";
-            this.loadImagesToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.loadImagesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.loadImagesToolStripMenuItem.Text = "Load Images";
             this.loadImagesToolStripMenuItem.Click += new System.EventHandler(this.updateImageDir);
             // 
@@ -202,7 +208,32 @@
             this.versionLabel.Name = "versionLabel";
             this.versionLabel.Size = new System.Drawing.Size(37, 13);
             this.versionLabel.TabIndex = 15;
-            this.versionLabel.Text = "v0.0.2";
+            this.versionLabel.Text = "v0.0.3";
+            this.versionLabel.Click += new System.EventHandler(this.versionLabel_Click);
+            // 
+            // mergeImagesToolStripMenuItem
+            // 
+            this.mergeImagesToolStripMenuItem.Enabled = false;
+            this.mergeImagesToolStripMenuItem.Name = "mergeImagesToolStripMenuItem";
+            this.mergeImagesToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.mergeImagesToolStripMenuItem.Text = "Merge Images";
+            this.mergeImagesToolStripMenuItem.Click += new System.EventHandler(this.onMergeImagesMenuClick);
+            // 
+            // compareImagesToolStripMenuItem
+            // 
+            this.compareImagesToolStripMenuItem.Enabled = false;
+            this.compareImagesToolStripMenuItem.Name = "compareImagesToolStripMenuItem";
+            this.compareImagesToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.compareImagesToolStripMenuItem.Text = "Compare Images";
+            this.compareImagesToolStripMenuItem.Click += new System.EventHandler(this.onCompareImagesMenuClick);
+            // 
+            // analyzeImagesToolStripMenuItem
+            // 
+            this.analyzeImagesToolStripMenuItem.Enabled = false;
+            this.analyzeImagesToolStripMenuItem.Name = "analyzeImagesToolStripMenuItem";
+            this.analyzeImagesToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.analyzeImagesToolStripMenuItem.Text = "Analyze Images";
+            this.analyzeImagesToolStripMenuItem.Click += new System.EventHandler(this.oAnalyzeImagesMenuClick);
             // 
             // Form1
             // 
@@ -255,6 +286,10 @@
         private System.Windows.Forms.Button buttonB;
         private System.Windows.Forms.Button buttonDelete;
         private System.Windows.Forms.Label versionLabel;
+
+        private System.Windows.Forms.ToolStripMenuItem mergeImagesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem compareImagesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem analyzeImagesToolStripMenuItem;
     }
 }
 
