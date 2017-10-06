@@ -597,10 +597,12 @@ namespace Classifier {
                 set { comments = value; }
             }
 
-            public String GetComment(String key) {
-                String value = null;
-                comments.TryGetValue(key, out value);
-                return value;
+            public String GetComment(String key, String defaultValue = null) {
+                String value;
+                if (comments.TryGetValue(key, out value)) {
+                    return value;
+                }
+                return defaultValue;
             }
 
             public void SetComment(String key, String value) {

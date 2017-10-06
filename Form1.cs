@@ -121,9 +121,7 @@ namespace Classifier {
             diag.RootFolder = Environment.SpecialFolder.MyComputer;
             diag.SelectedPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
 
-            DialogResult result = diag.ShowDialog();
-
-           
+            DialogResult result = diag.ShowDialog();        
 
             if (result == DialogResult.OK) {
                 loadImages(diag.SelectedPath);
@@ -294,12 +292,24 @@ namespace Classifier {
 
                 // Calculate averge time spent classifying the frames                         
                 String dateStr = pix.Header.GetComment("Date");
-                if (dateStr != null) { 
-                    DateTime date = DateTime.Parse(dateStr);
-                    
+                if (dateStr != null) {
+                    DateTime date;
+                    if (dateStr.Contains("/")) {
+                        date = DateTime.Parse(dateStr);
+                    } else {
+                        date = DateTime.ParseExact(dateStr, "yyyyMMdd HH:mm:ss.fff", null);
+                    }
+
                     // Check if we have a previous frame
                     if (prevImageDate != null) {
-                        DateTime prevDate = DateTime.Parse(prevImageDate);
+                        DateTime prevDate;
+                        if (prevImageDate.Contains("/")) {
+                            prevDate = DateTime.Parse(prevImageDate);
+                        } else {
+                            prevDate = DateTime.ParseExact(prevImageDate, "yyyyMMdd HH:mm:ss.fff", null);
+                        }
+
+                        
                         // Add time since last to sum
                         TimeSpan diff = date - prevDate;
                         diffs.Add(diff.TotalMilliseconds);
@@ -318,11 +328,9 @@ namespace Classifier {
             double minTime = diffs.Max();
 
             // Output analysis in dialog
-            String analysis = "";
-            analysis += "Time:\n" +
-                "\tMedian: " + medianTime + "\n" +
-                "\tAverage: " + averageTime + "\n" +
-                "\n" +
+            String analysis = "Time:\n" +
+                "Median: " + medianTime + "\n" +
+                "Average: " + averageTime + "\n" +
                 "Total images: " + totalImages + "\n" +
                 "Bad: " + numBad + "\n" +
                 "Total L: " + numLeft + "\n" +
@@ -336,8 +344,10 @@ namespace Classifier {
 
         private void onCompareImagesMenuClick(object sender, EventArgs e) {
             FolderBrowserDialog diag = new FolderBrowserDialog();
-            DialogResult result = diag.ShowDialog();
+            diag.RootFolder = Environment.SpecialFolder.MyComputer;
+            diag.SelectedPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
 
+            DialogResult result = diag.ShowDialog();
             if (result == DialogResult.OK) {
                 compareImages(diag.SelectedPath);
             }
@@ -360,19 +370,182 @@ namespace Classifier {
 
         private void onMergeImagesMenuClick(object sender, EventArgs e) {
             FolderBrowserDialog diag = new FolderBrowserDialog();
-            DialogResult result = diag.ShowDialog();
+            diag.RootFolder = Environment.SpecialFolder.MyComputer;
+            diag.SelectedPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
 
+            DialogResult result = diag.ShowDialog();
             if (result == DialogResult.OK) {
                 mergeImages(diag.SelectedPath);
             }
         }
 
         private void mergeImages(String incomingDir) {
+            if (imageDir == null) {
+                return;
+            }
 
+            IEnumerable<string> files = Directory.EnumerateFiles(incomingDir, "*.ppm");            
+            foreach (String incomingFile in files) {
+                PixelMap incoming = new PixelMap(incomingFile);
+
+                String incomingClass = incoming.Header.GetComment("Class");
+                double incomingScore = Convert.ToDouble(incoming.Header.GetComment("Score", "2.0")); // 2.0 == null
+                int incomingScoreCount = Convert.ToInt32(incoming.Header.GetComment("ScoreCount", "1"));
+                double incomingConfidence = Convert.ToDouble(incoming.Header.GetComment("ScoreConf", "1.0"));
+
+                if (incomingScore == 2.0) { // 2.0 == null                    
+                    incomingScore = getScoreFromImageClassification(incomingClass);
+                }
+
+                String filename = Path.GetFileName(incomingFile);
+                String targetFile = imageDir + '\\' + filename;                
+       
+                // No target file, save incoming as target
+                if (File.Exists(targetFile) == false) {
+                    // Set metadata and save in current dest dir
+                    incoming.Header.SetComment("Score", Convert.ToString(incomingScore));
+                    incoming.Header.SetComment("ScoreCount", incoming.Header.GetComment("ScoreCount", "1"));
+                    incoming.Header.SetComment("ScoreError", incoming.Header.GetComment("ScoreConf", "1.0"));
+
+                    incoming.Save(targetFile);
+                    continue;
+                }
+                                
+                // Load target file's metadata                
+                PixelMap target = new PixelMap(targetFile);              
+
+                // Update analytics
+                String classification = target.Header.GetComment("Class");
+                if (classification != null) {
+                    // Merge classifiction
+                    String targetClass = target.Header.GetComment("Class");
+                    double targetScore = Convert.ToDouble(target.Header.GetComment("Score", Convert.ToString(getScoreFromImageClassification(targetClass))));
+                    int targetScoreCount = Convert.ToInt32(target.Header.GetComment("ScoreCount", "1"));
+                    double targetConfidence = Convert.ToDouble(target.Header.GetComment("ScoreConf", "1.0"));
+
+                    double updatedScore = (targetScore + incomingScore) / 2;
+
+                    // Bad images should stay bad
+                    if (targetClass == "Bad" || incomingClass == "Bad") {
+                        updatedScore = getScoreFromImageClassification("Bad");
+                    }
+
+                    String updatedClassification = getClassificationFromImageScore(updatedScore);
+                    double incomingDistance = 1 - Math.Abs(targetScore - incomingScore);
+                    double updatedConfidence = (targetConfidence + incomingDistance) / 2;                                    
+                    
+                    // Set merged metadata and sve in current est dir
+                    target.Header.SetComment("Score", Convert.ToString(updatedScore));
+                    target.Header.SetComment("ScoreCount", Convert.ToString(targetScoreCount + 1));
+                    target.Header.SetComment("ScoreConf", Convert.ToString(updatedConfidence));
+                    
+                    target.Header.SetComment("Class", updatedClassification);
+                } else {
+                    throw new Exception("Unclassified image");
+                }
+
+                // Save updated target
+                target.Save(targetFile);
+            }
         }
 
-        private void versionLabel_Click(object sender, EventArgs e) {
+        private void onCreateTxtMenuClick(object sender, EventArgs e) {
+            createTxtFiles();
+        }
 
+        private void createTxtFiles() {
+            if (imageDir == null) {
+                return;
+            }
+
+            FileStream stream = new FileStream(imageDir + "/classes.txt", FileMode.Create);
+
+            IEnumerable<string> files = Directory.EnumerateFiles(imageDir, "*.ppm");
+            foreach (String incomingFile in files) {                
+                PixelMap incoming = new PixelMap(incomingFile);
+                String imageClass = incoming.Header.GetComment("Class");
+                String record = incomingFile + " " + imageClassToNumber(imageClass) + "\n";
+                byte[] bytes = Encoding.ASCII.GetBytes(record);
+                stream.Write(bytes, 0, bytes.Length);
+            }
+
+            stream.Close();
+        }
+
+        private int imageClassToNumber(String classification) {
+            switch (classification) {
+                case "B":
+                    return 0;
+                case "BR":
+                    return 1;
+                case "R":
+                    return 2;
+                case "SR":
+                    return 3;
+                case "F":
+                    return 4;
+                case "SL":
+                    return 5;
+                case "L":
+                    return 6;
+                case "BL":
+                    return 7;
+                case "Bad":
+                    return 8;
+                default:
+                    throw new Exception("Invalid class:" + classification);
+            }
+        }
+
+        private double getScoreFromImageClassification(String classification) {
+            switch(classification) {
+                case "B":
+                    return -1.0;
+                case "BR":
+                    return 0.75;
+                case "R":
+                    return 0.45;
+                case "SR":
+                    return 0.30;
+                case "F":
+                    return 0.0;
+                case "SL":
+                    return -0.30;
+                case "L":
+                    return -0.45;
+                case "BL":
+                    return -0.75;
+                case "Bad":
+                    return -2.0;
+                default:
+                    throw new Exception("Invalid class:" + classification);
+            }
+        }
+
+        private string getClassificationFromImageScore(double score) {
+            if (score > 0.75) {
+                return "B";
+            } else if (score > 0.55) {
+                return "BL";
+            } else if (score > 0.35) {
+                return "R";
+            } else if (score > 0.15) {
+                return "SR";
+            } else if (score > -0.15) {
+                return "F";
+            } else if (score > -0.35) {
+                return "SL";
+            } else if (score > -0.55) {
+                return "L";            
+            } else if (score > -0.75) {
+                return "BR";
+            } else if (score > -1.1) {
+                return "Bad";
+            } else {
+                return "B";
+            }
+
+            throw new Exception("Should not happen");
         }
     }
 }
